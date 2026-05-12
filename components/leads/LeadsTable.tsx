@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/select"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { Search, UserPlus, RefreshCw, ChevronLeft, ChevronRight } from "lucide-react"
+import { Search, UserPlus, RefreshCw, ChevronLeft, ChevronRight, MessageCircle } from "lucide-react"
 import { createClient } from "@/lib/supabase"
 import { estadoConfig, plataformaConfig, formatFecha, cn } from "@/lib/utils"
 import type { Lead, EstadoLead } from "@/lib/types"
@@ -95,6 +95,12 @@ export function LeadsTable() {
   function openSheet(lead: Lead) {
     setSelectedLead(lead)
     setSheetOpen(true)
+  }
+
+  function openWhatsApp(e: React.MouseEvent, numero: string) {
+    e.stopPropagation()
+    const clean = numero.replace(/\D/g, "")
+    window.open(`https://wa.me/${clean}`, "_blank", "noopener,noreferrer")
   }
 
   const totalPages = Math.ceil(total / PAGE_SIZE)
@@ -237,7 +243,17 @@ export function LeadsTable() {
 
                       {/* Número */}
                       <TableCell className="text-xs text-muted-foreground font-mono py-3">
-                        {lead.numero}
+                        <div className="flex items-center gap-1.5">
+                          <span>{lead.numero}</span>
+                          <button
+                            onClick={(e) => openWhatsApp(e, lead.numero)}
+                            title="Enviar mensaje por WhatsApp"
+                            className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 text-[10px] font-semibold text-emerald-400 hover:text-emerald-300 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 rounded-full px-2 py-0.5 leading-none flex-shrink-0"
+                          >
+                            <MessageCircle className="w-2.5 h-2.5" />
+                            WSP
+                          </button>
+                        </div>
                       </TableCell>
 
                       {/* Plataforma */}
