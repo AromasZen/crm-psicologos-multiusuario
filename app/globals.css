@@ -1,0 +1,88 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", sans-serif;
+  --color-background: #0a0a0f;
+  --color-surface: #111118;
+  --color-surface-2: #1a1a25;
+  --color-border: #2a2a3a;
+  --color-text: #e2e2f0;
+  --color-muted: #6b6b8a;
+  --color-accent: #7c3aed;
+  --color-accent-light: #8b5cf6;
+}
+
+@layer base {
+  :root {
+    --background: 240 13% 4%;
+    --foreground: 240 13% 90%;
+    --card: 240 13% 7%;
+    --card-foreground: 240 13% 90%;
+    --popover: 240 13% 7%;
+    --popover-foreground: 240 13% 90%;
+    --primary: 263 70% 58%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 240 13% 12%;
+    --secondary-foreground: 240 13% 80%;
+    --muted: 240 13% 12%;
+    --muted-foreground: 240 8% 55%;
+    --accent: 263 70% 58%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 62% 50%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 240 13% 18%;
+    --input: 240 13% 12%;
+    --ring: 263 70% 58%;
+    --radius: 0.5rem;
+  }
+
+  * {
+    border-color: hsl(var(--border));
+  }
+
+  html {
+    color-scheme: dark;
+  }
+
+  body {
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+    font-family: "Inter", sans-serif;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: hsl(var(--background));
+  }
+  ::-webkit-scrollbar-thumb {
+    background: hsl(var(--border));
+    border-radius: 99px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--muted-foreground));
+  }
+}
+
+/* Gradient text utility */
+.gradient-text {
+  background: linear-gradient(135deg, #a78bfa 0%, #818cf8 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Glass card */
+.glass-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(12px);
+}
+
+/* Smooth transitions */
+.transition-all-200 {
+  transition: all 0.2s ease;
+}
