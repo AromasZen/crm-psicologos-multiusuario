@@ -48,4 +48,5 @@ export interface DashboardMetrics {
   demos_agendadas: number
   clientes: number
   no_interesados: number
+  seguimiento_pendiente: number
 }
