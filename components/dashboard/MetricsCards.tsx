@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { Users, MessageSquareOff, TrendingUp, CalendarCheck, BadgeCheck, XCircle } from "lucide-react"
+import { Users, MessageSquareOff, TrendingUp, CalendarCheck, BadgeCheck, XCircle, Clock } from "lucide-react"
 import { createClient } from "@/lib/supabase"
 import type { DashboardMetrics } from "@/lib/types"
 
@@ -54,6 +54,14 @@ const metricCards = [
     iconColor: "text-red-400",
     borderColor: "border-red-600/20",
   },
+  {
+    key: "seguimiento_pendiente" as const,
+    label: "Seguimiento",
+    icon: Clock,
+    color: "from-blue-600/20 to-blue-700/5",
+    iconColor: "text-blue-400",
+    borderColor: "border-blue-600/20",
+  },
 ]
 
 export function MetricsCards() {
@@ -64,6 +72,7 @@ export function MetricsCards() {
     demos_agendadas: 0,
     clientes: 0,
     no_interesados: 0,
+    seguimiento_pendiente: 0,
   })
   const [loading, setLoading] = useState(true)
 
@@ -86,6 +95,7 @@ export function MetricsCards() {
         demos_agendadas: data.filter((l) => l.estado === "demo_agendada").length,
         clientes: data.filter((l) => l.estado === "cliente").length,
         no_interesados: data.filter((l) => l.estado === "no_interesado").length,
+        seguimiento_pendiente: data.filter((l) => l.estado === "seguimiento_pendiente").length,
       }
       setMetrics(m)
       setLoading(false)
@@ -94,7 +104,7 @@ export function MetricsCards() {
   }, [])
 
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3">
+    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-3">
       {metricCards.map(({ key, label, icon: Icon, color, iconColor, borderColor }) => (
         <div
           key={key}
