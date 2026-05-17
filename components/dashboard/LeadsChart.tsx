@@ -17,6 +17,7 @@ const STATUS_CONFIG: Record<string, { label: string; color: string }> = {
   demo_agendada: { label: "Demo agendada", color: "#8b5cf6" },
   cliente:       { label: "Clientes",      color: "#f59e0b" },
   no_interesado: { label: "No interesados",color: "#ef4444" },
+  seguimiento_pendiente: { label: "Seguimiento", color: "#3b82f6" },
 }
 
 type ChartEntry = { name: string; value: number; color: string }
