@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { LayoutDashboard, Users, Bell, UserCheck, DollarSign, LogOut } from "lucide-react"
+import { LayoutDashboard, Users, Bell, UserCheck, DollarSign, LogOut, BookOpen } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useAuth } from "@/lib/auth-context"
 
@@ -12,6 +12,7 @@ const navItems = [
   { href: "/recordatorios", icon: Bell, label: "Recordatorios" },
   { href: "/clientes", icon: UserCheck, label: "Clientes" },
   { href: "/comisiones", icon: DollarSign, label: "Comisiones" },
+  { href: "/recursos", icon: BookOpen, label: "Centro de Recursos" },
 ]
 
 export function Sidebar() {

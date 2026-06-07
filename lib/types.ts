@@ -73,3 +73,17 @@ export interface DashboardMetrics {
   clientes: number
   no_interesados: number
 }
+
+export type TipoRecurso = 'mensaje' | 'objecion' | 'caso_de_uso' | 'consejo'
+
+export interface Recurso {
+  id: string
+  tipo: TipoRecurso
+  categoria: string | null // e.g., 'primer_contacto', 'seguimiento', 'recontacto', 'objecion', 'cierre' (used for tipo === 'mensaje')
+  titulo: string
+  contenido: string
+  orden: number
+  created_at: string
+  updated_at: string
+}
+
