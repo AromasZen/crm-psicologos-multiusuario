@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/select"
 import { UserPlus } from "lucide-react"
 import { createClient } from "@/lib/supabase"
+import { useAuth } from "@/lib/auth-context"
 import type { Plataforma, EstadoLead } from "@/lib/types"
 
 interface NewLeadModalProps {
@@ -33,12 +34,14 @@ const defaultForm = {
   nombre: "",
   numero: "",
   plataforma: "whatsapp" as Plataforma,
+  fuente: "",
   estado: "sin_respuesta" as EstadoLead,
   notas: "",
   fecha_contacto: new Date().toISOString().slice(0, 10),
 }
 
 export function NewLeadModal({ open, onOpenChange, onCreated }: NewLeadModalProps) {
+  const { usuarioId } = useAuth()
   const [form, setForm] = useState(defaultForm)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState("")
@@ -49,15 +52,20 @@ export function NewLeadModal({ open, onOpenChange, onCreated }: NewLeadModalProp
       setError("Nombre y número son obligatorios.")
       return
     }
+    if (!usuarioId) {
+      setError("Error de autenticación. Recargá la página.")
+      return
+    }
     setSaving(true)
     setError("")
     const supabase = createClient()
 
-    // Check duplicate by numero
+    // Check duplicate by numero for this user
     const { data: existing } = await supabase
       .from("leads")
       .select("id")
       .eq("numero", form.numero.trim())
+      .eq("usuario_id", usuarioId)
       .single()
 
     if (existing) {
@@ -67,9 +75,11 @@ export function NewLeadModal({ open, onOpenChange, onCreated }: NewLeadModalProp
     }
 
     const { error: insertError } = await supabase.from("leads").insert({
+      usuario_id: usuarioId,
       nombre: form.nombre.trim(),
       numero: form.numero.trim(),
       plataforma: form.plataforma,
+      fuente: form.fuente.trim() || null,
       estado: form.estado,
       notas: form.notas.trim() || null,
       fecha_contacto: form.fecha_contacto
@@ -143,6 +153,17 @@ export function NewLeadModal({ open, onOpenChange, onCreated }: NewLeadModalProp
               </Select>
             </div>
 
+            {/* Fuente */}
+            <div className="space-y-1.5">
+              <Label className="text-xs text-muted-foreground">Fuente</Label>
+              <Input
+                placeholder="Ej: Referido, Google, etc."
+                value={form.fuente}
+                onChange={(e) => setForm({ ...form, fuente: e.target.value })}
+                className="bg-secondary border-border text-sm h-9"
+              />
+            </div>
+
             {/* Estado */}
             <div className="space-y-1.5">
               <Label className="text-xs text-muted-foreground">Estado inicial</Label>
@@ -155,11 +176,11 @@ export function NewLeadModal({ open, onOpenChange, onCreated }: NewLeadModalProp
                 </SelectTrigger>
                 <SelectContent className="bg-card border-border">
                   <SelectItem value="sin_respuesta">Sin respuesta</SelectItem>
+                  <SelectItem value="seguimiento">Seguimiento</SelectItem>
                   <SelectItem value="interesado">Interesado</SelectItem>
-                  <SelectItem value="no_interesado">No interesado</SelectItem>
-                  <SelectItem value="demo_agendada">Demo agendada</SelectItem>
+                  <SelectItem value="pasado_a_agustin">Pasado a Agustín</SelectItem>
                   <SelectItem value="cliente">Cliente</SelectItem>
-                  <SelectItem value="seguimiento_pendiente">Seguimiento</SelectItem>
+                  <SelectItem value="no_interesado">No interesado</SelectItem>
                 </SelectContent>
               </Select>
             </div>

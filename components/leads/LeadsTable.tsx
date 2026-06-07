@@ -20,6 +20,7 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Search, UserPlus, RefreshCw, ChevronLeft, ChevronRight, MessageCircle } from "lucide-react"
 import { createClient } from "@/lib/supabase"
+import { useAuth } from "@/lib/auth-context"
 import { estadoConfig, plataformaConfig, formatFecha, cn } from "@/lib/utils"
 import type { Lead, EstadoLead } from "@/lib/types"
 import { LeadSheet } from "./LeadSheet"
@@ -29,6 +30,7 @@ import { ImportExcel } from "./ImportExcel"
 const PAGE_SIZE = 20
 
 export function LeadsTable() {
+  const { usuarioId } = useAuth()
   const [leads, setLeads] = useState<Lead[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState("")
@@ -42,12 +44,14 @@ export function LeadsTable() {
   const [updatingEstado, setUpdatingEstado] = useState<string | null>(null)
 
   const fetchLeads = useCallback(async () => {
+    if (!usuarioId) return
     setLoading(true)
     const supabase = createClient()
 
     let query = supabase
       .from("leads")
       .select("*", { count: "exact" })
+      .eq("usuario_id", usuarioId)
       .order("fecha_ultimo_mensaje", { ascending: false, nullsFirst: false })
       .order("created_at", { ascending: false })
 
@@ -67,7 +71,7 @@ export function LeadsTable() {
       setTotal(count ?? 0)
     }
     setLoading(false)
-  }, [search, filterEstado, page])
+  }, [search, filterEstado, page, usuarioId])
 
   useEffect(() => {
     const timer = setTimeout(fetchLeads, 300)
@@ -131,9 +135,9 @@ export function LeadsTable() {
           <SelectContent className="bg-card border-border">
             <SelectItem value="todos">Todos los estados</SelectItem>
             <SelectItem value="sin_respuesta">Sin respuesta</SelectItem>
+            <SelectItem value="seguimiento">Seguimiento</SelectItem>
             <SelectItem value="interesado">Interesado</SelectItem>
-            <SelectItem value="seguimiento_pendiente">Seguimiento</SelectItem>
-            <SelectItem value="demo_agendada">Demo agendada</SelectItem>
+            <SelectItem value="pasado_a_agustin">Pasado a Agustín</SelectItem>
             <SelectItem value="cliente">Cliente</SelectItem>
             <SelectItem value="no_interesado">No interesado</SelectItem>
           </SelectContent>
@@ -175,6 +179,7 @@ export function LeadsTable() {
                 <TableHead className="text-xs font-semibold text-muted-foreground w-48">Nombre</TableHead>
                 <TableHead className="text-xs font-semibold text-muted-foreground w-36">Número</TableHead>
                 <TableHead className="text-xs font-semibold text-muted-foreground w-28">Plataforma</TableHead>
+                <TableHead className="text-xs font-semibold text-muted-foreground w-28">Fuente</TableHead>
                 <TableHead className="text-xs font-semibold text-muted-foreground w-44">Estado</TableHead>
                 <TableHead className="text-xs font-semibold text-muted-foreground w-28">Último msg</TableHead>
                 <TableHead className="text-xs font-semibold text-muted-foreground">Notas</TableHead>
@@ -184,7 +189,7 @@ export function LeadsTable() {
               {loading ? (
                 Array.from({ length: 8 }).map((_, i) => (
                   <TableRow key={i} className="border-border animate-pulse">
-                    {Array.from({ length: 6 }).map((__, j) => (
+                    {Array.from({ length: 7 }).map((__, j) => (
                       <TableCell key={j}>
                         <div className="h-4 bg-border rounded w-3/4" />
                       </TableCell>
@@ -193,7 +198,7 @@ export function LeadsTable() {
                 ))
               ) : leads.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center py-16 text-muted-foreground text-sm">
+                  <TableCell colSpan={7} className="text-center py-16 text-muted-foreground text-sm">
                     <div className="flex flex-col items-center gap-3">
                       <div className="w-12 h-12 rounded-full bg-secondary flex items-center justify-center text-2xl">
                         🔍
@@ -263,6 +268,11 @@ export function LeadsTable() {
                         </span>
                       </TableCell>
 
+                      {/* Fuente */}
+                      <TableCell className="text-xs text-muted-foreground py-3">
+                        {lead.fuente || "—"}
+                      </TableCell>
+
                       {/* Estado — dropdown in-cell */}
                       <TableCell className="py-3" onClick={(e) => e.stopPropagation()}>
                         <Select
@@ -281,9 +291,9 @@ export function LeadsTable() {
                           </SelectTrigger>
                           <SelectContent className="bg-card border-border text-xs">
                             <SelectItem value="sin_respuesta">Sin respuesta</SelectItem>
+                            <SelectItem value="seguimiento">Seguimiento</SelectItem>
                             <SelectItem value="interesado">Interesado</SelectItem>
-                            <SelectItem value="seguimiento_pendiente">Seguimiento</SelectItem>
-                            <SelectItem value="demo_agendada">Demo agendada</SelectItem>
+                            <SelectItem value="pasado_a_agustin">Pasado a Agustín</SelectItem>
                             <SelectItem value="cliente">Cliente ✓</SelectItem>
                             <SelectItem value="no_interesado">No interesado</SelectItem>
                           </SelectContent>

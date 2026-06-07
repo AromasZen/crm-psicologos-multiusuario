@@ -2,29 +2,48 @@
 
 import { useState, useEffect, useCallback } from "react"
 import { createClient } from "@/lib/supabase"
+import { useAuth } from "@/lib/auth-context"
 import { formatFechaCompleta, plataformaConfig, cn } from "@/lib/utils"
 import type { Recordatorio } from "@/lib/types"
 import { CheckCircle, Clock, Trash2, RefreshCw } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 export function RecordatoriosList() {
+  const { usuarioId } = useAuth()
   const [recordatorios, setRecordatorios] = useState<Recordatorio[]>([])
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState<"pendientes" | "completados" | "todos">("pendientes")
 
   const fetchRecordatorios = useCallback(async () => {
+    if (!usuarioId) return
     setLoading(true)
     const supabase = createClient()
+
+    // Get leads belonging to this user
+    const { data: userLeads } = await supabase
+      .from("leads")
+      .select("id")
+      .eq("usuario_id", usuarioId)
+
+    if (!userLeads || userLeads.length === 0) {
+      setRecordatorios([])
+      setLoading(false)
+      return
+    }
+
+    const leadIds = userLeads.map((l) => l.id)
+
     let query = supabase
       .from("recordatorios")
       .select("*, leads(nombre, numero, plataforma)")
+      .in("lead_id", leadIds)
       .order("fecha_recordatorio", { ascending: true })
 
     if (filter === "pendientes") {
       query = query.eq("completado", false)
     } else if (filter === "completados") {
       query = query.eq("completado", true)
-      query = query.order("fecha_recordatorio", { ascending: false }) // los más recientes primero
+      query = query.order("fecha_recordatorio", { ascending: false })
     }
 
     const { data, error } = await query
@@ -33,7 +52,7 @@ export function RecordatoriosList() {
       setRecordatorios(data as Recordatorio[])
     }
     setLoading(false)
-  }, [filter])
+  }, [filter, usuarioId])
 
   useEffect(() => {
     fetchRecordatorios()

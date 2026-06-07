@@ -7,17 +7,17 @@ import {
   Cell,
   Tooltip,
   ResponsiveContainer,
-  Legend,
 } from "recharts"
 import { createClient } from "@/lib/supabase"
+import { useAuth } from "@/lib/auth-context"
 
 const STATUS_CONFIG: Record<string, { label: string; color: string }> = {
   sin_respuesta: { label: "Sin respuesta", color: "#f97316" },
+  seguimiento:   { label: "Seguimiento",   color: "#3b82f6" },
   interesado:    { label: "Interesados",   color: "#10b981" },
-  demo_agendada: { label: "Demo agendada", color: "#8b5cf6" },
+  pasado_a_agustin: { label: "Pasado a Agustín", color: "#8b5cf6" },
   cliente:       { label: "Clientes",      color: "#f59e0b" },
   no_interesado: { label: "No interesados",color: "#ef4444" },
-  seguimiento_pendiente: { label: "Seguimiento", color: "#3b82f6" },
 }
 
 type ChartEntry = { name: string; value: number; color: string }
@@ -63,16 +63,19 @@ function CustomLegend({ data }: { data: ChartEntry[] }) {
 
 // ── Main component ──────────────────────────────────────────────────────────
 export function LeadsChart() {
+  const { usuarioId } = useAuth()
   const [data, setData] = useState<ChartEntry[]>([])
   const [total, setTotal] = useState(0)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     async function fetchData() {
+      if (!usuarioId) return
       const supabase = createClient()
       const { data: rows, error } = await supabase
         .from("leads")
         .select("estado")
+        .eq("usuario_id", usuarioId)
 
       if (error || !rows) { setLoading(false); return }
 
@@ -97,7 +100,7 @@ export function LeadsChart() {
       setLoading(false)
     }
     fetchData()
-  }, [])
+  }, [usuarioId])
 
   return (
     <div className="rounded-xl border border-border bg-card p-5 flex flex-col gap-4 h-full">

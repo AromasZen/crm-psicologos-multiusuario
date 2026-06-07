@@ -3,22 +3,40 @@
 import { useEffect, useState, useCallback } from "react"
 import { Bell, CheckCircle, Clock, RefreshCw } from "lucide-react"
 import { createClient } from "@/lib/supabase"
+import { useAuth } from "@/lib/auth-context"
 import { plataformaConfig, formatFechaCompleta } from "@/lib/utils"
 import type { Recordatorio } from "@/lib/types"
 import { Button } from "@/components/ui/button"
 
 export function PendingFollowups() {
+  const { usuarioId } = useAuth()
   const [recordatorios, setRecordatorios] = useState<Recordatorio[]>([])
   const [loading, setLoading] = useState(true)
   const [marking, setMarking] = useState<string | null>(null)
 
   const fetchPendientes = useCallback(async () => {
+    if (!usuarioId) return
     const supabase = createClient()
+
+    // First get leads belonging to this user
+    const { data: userLeads } = await supabase
+      .from("leads")
+      .select("id")
+      .eq("usuario_id", usuarioId)
+
+    if (!userLeads || userLeads.length === 0) {
+      setRecordatorios([])
+      setLoading(false)
+      return
+    }
+
+    const leadIds = userLeads.map((l) => l.id)
     const today = new Date().toISOString().split("T")[0]
 
     const { data, error } = await supabase
       .from("recordatorios")
       .select("*, leads(nombre, numero, plataforma)")
+      .in("lead_id", leadIds)
       .eq("completado", false)
       .lte("fecha_recordatorio", today + "T23:59:59")
       .order("fecha_recordatorio", { ascending: true })
@@ -28,7 +46,7 @@ export function PendingFollowups() {
       setRecordatorios(data as Recordatorio[])
     }
     setLoading(false)
-  }, [])
+  }, [usuarioId])
 
   useEffect(() => {
     fetchPendientes()

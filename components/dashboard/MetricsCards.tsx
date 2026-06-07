@@ -1,8 +1,9 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { Users, MessageSquareOff, TrendingUp, CalendarCheck, BadgeCheck, XCircle, Clock } from "lucide-react"
+import { Users, MessageSquareOff, TrendingUp, ArrowRightLeft, BadgeCheck, XCircle, Clock } from "lucide-react"
 import { createClient } from "@/lib/supabase"
+import { useAuth } from "@/lib/auth-context"
 import type { DashboardMetrics } from "@/lib/types"
 
 const metricCards = [
@@ -23,6 +24,14 @@ const metricCards = [
     borderColor: "border-orange-600/20",
   },
   {
+    key: "seguimiento" as const,
+    label: "Seguimiento",
+    icon: Clock,
+    color: "from-blue-600/20 to-blue-700/5",
+    iconColor: "text-blue-400",
+    borderColor: "border-blue-600/20",
+  },
+  {
     key: "interesados" as const,
     label: "Interesados",
     icon: TrendingUp,
@@ -31,9 +40,9 @@ const metricCards = [
     borderColor: "border-emerald-600/20",
   },
   {
-    key: "demos_agendadas" as const,
-    label: "Demos agendadas",
-    icon: CalendarCheck,
+    key: "pasado_a_agustin" as const,
+    label: "Pasado a Agustín",
+    icon: ArrowRightLeft,
     color: "from-violet-600/25 to-violet-700/5",
     iconColor: "text-violet-400",
     borderColor: "border-violet-600/25",
@@ -54,34 +63,29 @@ const metricCards = [
     iconColor: "text-red-400",
     borderColor: "border-red-600/20",
   },
-  {
-    key: "seguimiento_pendiente" as const,
-    label: "Seguimiento",
-    icon: Clock,
-    color: "from-blue-600/20 to-blue-700/5",
-    iconColor: "text-blue-400",
-    borderColor: "border-blue-600/20",
-  },
 ]
 
 export function MetricsCards() {
+  const { usuarioId } = useAuth()
   const [metrics, setMetrics] = useState<DashboardMetrics>({
     total: 0,
     sin_respuesta: 0,
+    seguimiento: 0,
     interesados: 0,
-    demos_agendadas: 0,
+    pasado_a_agustin: 0,
     clientes: 0,
     no_interesados: 0,
-    seguimiento_pendiente: 0,
   })
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     async function fetchMetrics() {
+      if (!usuarioId) return
       const supabase = createClient()
       const { data, error } = await supabase
         .from("leads")
         .select("estado")
+        .eq("usuario_id", usuarioId)
 
       if (error || !data) {
         setLoading(false)
@@ -91,17 +95,17 @@ export function MetricsCards() {
       const m: DashboardMetrics = {
         total: data.length,
         sin_respuesta: data.filter((l) => l.estado === "sin_respuesta").length,
+        seguimiento: data.filter((l) => l.estado === "seguimiento").length,
         interesados: data.filter((l) => l.estado === "interesado").length,
-        demos_agendadas: data.filter((l) => l.estado === "demo_agendada").length,
+        pasado_a_agustin: data.filter((l) => l.estado === "pasado_a_agustin").length,
         clientes: data.filter((l) => l.estado === "cliente").length,
         no_interesados: data.filter((l) => l.estado === "no_interesado").length,
-        seguimiento_pendiente: data.filter((l) => l.estado === "seguimiento_pendiente").length,
       }
       setMetrics(m)
       setLoading(false)
     }
     fetchMetrics()
-  }, [])
+  }, [usuarioId])
 
   return (
     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-3">

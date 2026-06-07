@@ -11,11 +11,11 @@ export const estadoConfig: Record<
   { label: string; color: string }
 > = {
   sin_respuesta: { label: "Sin respuesta", color: "bg-slate-500/20 text-slate-300 border-slate-500/30" },
+  seguimiento: { label: "Seguimiento", color: "bg-blue-500/20 text-blue-300 border-blue-500/30" },
   interesado: { label: "Interesado", color: "bg-emerald-500/20 text-emerald-300 border-emerald-500/30" },
-  no_interesado: { label: "No interesado", color: "bg-red-500/20 text-red-300 border-red-500/30" },
-  demo_agendada: { label: "Demo agendada", color: "bg-violet-500/20 text-violet-300 border-violet-500/30" },
+  pasado_a_agustin: { label: "Pasado a Agustín", color: "bg-violet-500/20 text-violet-300 border-violet-500/30" },
   cliente: { label: "Cliente ✓", color: "bg-amber-500/20 text-amber-300 border-amber-500/30" },
-  seguimiento_pendiente: { label: "Seguimiento", color: "bg-blue-500/20 text-blue-300 border-blue-500/30" },
+  no_interesado: { label: "No interesado", color: "bg-red-500/20 text-red-300 border-red-500/30" },
 }
 
 export const plataformaConfig: Record<

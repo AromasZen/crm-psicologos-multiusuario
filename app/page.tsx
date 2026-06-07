@@ -1,6 +1,7 @@
 import { MetricsCards } from "@/components/dashboard/MetricsCards"
 import { PendingFollowups } from "@/components/dashboard/PendingFollowups"
 import { LeadsChart } from "@/components/dashboard/LeadsChart"
+import { RevenueGoal } from "@/components/dashboard/RevenueGoal"
 
 export default function DashboardPage() {
   return (
@@ -18,6 +19,11 @@ export default function DashboardPage() {
       {/* Metrics */}
       <section>
         <MetricsCards />
+      </section>
+
+      {/* Revenue Goal */}
+      <section>
+        <RevenueGoal />
       </section>
 
       {/* Followups + Chart */}

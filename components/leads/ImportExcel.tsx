@@ -4,6 +4,7 @@ import { useRef, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { FileSpreadsheet, Upload, CheckCircle, XCircle } from "lucide-react"
 import { createClient } from "@/lib/supabase"
+import { useAuth } from "@/lib/auth-context"
 import type { Plataforma, EstadoLead } from "@/lib/types"
 
 interface ImportExcelProps {
@@ -17,13 +18,14 @@ interface ImportResult {
 }
 
 export function ImportExcel({ onImported }: ImportExcelProps) {
+  const { usuarioId } = useAuth()
   const inputRef = useRef<HTMLInputElement>(null)
   const [loading, setLoading] = useState(false)
   const [result, setResult] = useState<ImportResult | null>(null)
 
   async function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
-    if (!file) return
+    if (!file || !usuarioId) return
     setLoading(true)
     setResult(null)
 
@@ -44,6 +46,7 @@ export function ImportExcel({ onImported }: ImportExcelProps) {
         const numero = String(row.numero || row.Numero || row.número || "").trim()
         const plataforma = (String(row.plataforma || row.Plataforma || "").toLowerCase().trim() ||
           "otro") as Plataforma
+        const fuente = String(row.fuente || row.Fuente || "").trim()
         const notas = String(row.notas || row.Notas || "").trim()
 
         if (!nombre || !numero) {
@@ -56,11 +59,12 @@ export function ImportExcel({ onImported }: ImportExcelProps) {
           ? plataforma
           : "otro"
 
-        // Check duplicate
+        // Check duplicate for this user
         const { data: existing } = await supabase
           .from("leads")
           .select("id")
           .eq("numero", numero)
+          .eq("usuario_id", usuarioId)
           .single()
 
         if (existing) {
@@ -69,9 +73,11 @@ export function ImportExcel({ onImported }: ImportExcelProps) {
         }
 
         const { error } = await supabase.from("leads").insert({
+          usuario_id: usuarioId,
           nombre,
           numero,
           plataforma: plataformaFinal,
+          fuente: fuente || null,
           estado: "sin_respuesta" as EstadoLead,
           notas: notas || null,
           fecha_contacto: new Date().toISOString(),

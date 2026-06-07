@@ -1,34 +1,36 @@
 // lib/types.ts
 
 export type Plataforma = 'whatsapp' | 'instagram' | 'email' | 'otro'
+
 export type EstadoLead =
   | 'sin_respuesta'
+  | 'seguimiento'
   | 'interesado'
-  | 'no_interesado'
-  | 'demo_agendada'
+  | 'pasado_a_agustin'
   | 'cliente'
-  | 'seguimiento_pendiente'
+  | 'no_interesado'
+
+export interface Usuario {
+  id: string
+  nombre: string
+  email: string
+  activo: boolean
+  created_at: string
+}
 
 export interface Lead {
   id: string
+  usuario_id: string
   nombre: string
   numero: string
   plataforma: Plataforma
+  fuente: string | null
   estado: EstadoLead
   fecha_contacto: string | null
   fecha_ultimo_mensaje: string | null
   notas: string | null
   created_at: string
   updated_at: string
-}
-
-export interface Mensaje {
-  id: string
-  lead_id: string
-  fecha: string
-  tipo: 'enviado' | 'recibido'
-  contenido: string
-  created_at: string
 }
 
 export interface Recordatorio {
@@ -41,12 +43,33 @@ export interface Recordatorio {
   leads?: Pick<Lead, 'nombre' | 'numero' | 'plataforma'>
 }
 
+export interface Cliente {
+  id: string
+  lead_id: string
+  usuario_id: string
+  nombre: string
+  mensualidad: number
+  activo: boolean
+  fecha_alta: string
+}
+
+export interface Comision {
+  id: string
+  cliente_id: string
+  usuario_id: string
+  monto: number
+  pagada: boolean
+  fecha_generada: string
+  fecha_pagada: string | null
+  clientes?: Pick<Cliente, 'nombre'>
+}
+
 export interface DashboardMetrics {
   total: number
   sin_respuesta: number
+  seguimiento: number
   interesados: number
-  demos_agendadas: number
+  pasado_a_agustin: number
   clientes: number
   no_interesados: number
-  seguimiento_pendiente: number
 }
