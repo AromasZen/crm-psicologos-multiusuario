@@ -31,7 +31,7 @@ export function RecordatoriosList() {
       return
     }
 
-    const leadIds = userLeads.map((l) => l.id)
+    const leadIds = userLeads.map((l: any) => l.id)
 
     let query = supabase
       .from("recordatorios")

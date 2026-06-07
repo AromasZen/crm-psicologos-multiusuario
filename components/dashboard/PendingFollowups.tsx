@@ -30,7 +30,7 @@ export function PendingFollowups() {
       return
     }
 
-    const leadIds = userLeads.map((l) => l.id)
+    const leadIds = userLeads.map((l: any) => l.id)
     const today = new Date().toISOString().split("T")[0]
 
     const { data, error } = await supabase

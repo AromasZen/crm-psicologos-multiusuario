@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useEffect, useState, useCallback, type ReactNode } from "react"
 import { createClient } from "@/lib/supabase"
-import type { User } from "@supabase/supabase-js"
+import type { User, Session } from "@supabase/supabase-js"
 
 interface AuthContextType {
   user: User | null
@@ -44,46 +44,56 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       .single()
 
     if (!error && data) {
-      setUsuarioId(data.id)
-      setUsuarioNombre(data.nombre)
-    } else {
-      // User exists in auth but not in usuarios table or is inactive
-      setUsuarioId(null)
-      setUsuarioNombre(null)
+      return data
     }
+    return null
   }, [])
 
   useEffect(() => {
     const supabase = createClient()
+    let active = true
 
-    // Check initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    async function handleAuth(session: any) {
       if (session?.user) {
-        setUser(session.user)
-        fetchUsuario(session.user.email!)
-      }
-      setLoading(false)
-    })
-
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        if (session?.user) {
-          setUser(session.user)
-          await fetchUsuario(session.user.email!)
-        } else {
+        if (active) setUser(session.user)
+        const dbUser = await fetchUsuario(session.user.email!)
+        if (active) {
+          if (dbUser) {
+            setUsuarioId(dbUser.id)
+            setUsuarioNombre(dbUser.nombre)
+          } else {
+            setUsuarioId(null)
+            setUsuarioNombre(null)
+          }
+        }
+      } else {
+        if (active) {
           setUser(null)
           setUsuarioId(null)
           setUsuarioNombre(null)
         }
-        setLoading(false)
+      }
+      if (active) setLoading(false)
+    }
+
+    // Check initial session
+    supabase.auth.getSession().then(({ data: { session } }: { data: { session: Session | null } }) => {
+      handleAuth(session)
+    })
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event: string, session: Session | null) => {
+        await handleAuth(session)
       }
     )
 
     return () => {
+      active = false
       subscription.unsubscribe()
     }
   }, [fetchUsuario])
+
 
   const signOut = useCallback(async () => {
     const supabase = createClient()

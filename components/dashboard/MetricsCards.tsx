@@ -94,12 +94,12 @@ export function MetricsCards() {
 
       const m: DashboardMetrics = {
         total: data.length,
-        sin_respuesta: data.filter((l) => l.estado === "sin_respuesta").length,
-        seguimiento: data.filter((l) => l.estado === "seguimiento").length,
-        interesados: data.filter((l) => l.estado === "interesado").length,
-        pasado_a_agustin: data.filter((l) => l.estado === "pasado_a_agustin").length,
-        clientes: data.filter((l) => l.estado === "cliente").length,
-        no_interesados: data.filter((l) => l.estado === "no_interesado").length,
+        sin_respuesta: data.filter((l: any) => l.estado === "sin_respuesta").length,
+        seguimiento: data.filter((l: any) => l.estado === "seguimiento").length,
+        interesados: data.filter((l: any) => l.estado === "interesado").length,
+        pasado_a_agustin: data.filter((l: any) => l.estado === "pasado_a_agustin").length,
+        clientes: data.filter((l: any) => l.estado === "cliente").length,
+        no_interesados: data.filter((l: any) => l.estado === "no_interesado").length,
       }
       setMetrics(m)
       setLoading(false)
