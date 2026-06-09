@@ -35,18 +35,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true)
 
   const fetchUsuario = useCallback(async (email: string) => {
-    const supabase = createClient()
-    const { data, error } = await supabase
-      .from("usuarios")
-      .select("id, nombre")
-      .eq("email", email)
-      .eq("activo", true)
-      .single()
+    try {
+      const supabase = createClient()
+      const { data, error } = await supabase
+        .from("usuarios")
+        .select("id, nombre")
+        .eq("email", email)
+        .eq("activo", true)
+        .single()
 
-    if (!error && data) {
-      return data
+      if (!error && data) {
+        return data
+      }
+      return null
+    } catch {
+      return null
     }
-    return null
   }, [])
 
   useEffect(() => {
@@ -54,33 +58,48 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     let active = true
 
     async function handleAuth(session: Session | null) {
-      if (session?.user) {
-        if (active) setUser(session.user)
-        const dbUser = await fetchUsuario(session.user.email!)
-        if (active) {
-          if (dbUser) {
-            setUsuarioId(dbUser.id)
-            setUsuarioNombre(dbUser.nombre)
-          } else {
+      try {
+        if (session?.user) {
+          if (active) setUser(session.user)
+          const dbUser = await fetchUsuario(session.user.email!)
+          if (active) {
+            if (dbUser) {
+              setUsuarioId(dbUser.id)
+              setUsuarioNombre(dbUser.nombre)
+            } else {
+              setUsuarioId(null)
+              setUsuarioNombre(null)
+            }
+          }
+        } else {
+          if (active) {
+            setUser(null)
             setUsuarioId(null)
             setUsuarioNombre(null)
           }
         }
-      } else {
+      } catch {
+        // On any error, clear auth state
         if (active) {
           setUser(null)
           setUsuarioId(null)
           setUsuarioNombre(null)
         }
+      } finally {
+        if (active) setLoading(false)
       }
-      if (active) setLoading(false)
     }
 
     // Check initial session — Supabase SSR persists the session automatically
     // via cookies, so getSession() restores it on page refresh
-    supabase.auth.getSession().then(({ data: { session } }: { data: { session: Session | null } }) => {
-      handleAuth(session)
-    })
+    supabase.auth.getSession()
+      .then(({ data: { session } }: { data: { session: Session | null } }) => {
+        handleAuth(session)
+      })
+      .catch(() => {
+        // If getSession fails entirely, stop loading and show login
+        if (active) setLoading(false)
+      })
 
     // Listen for auth changes (login, logout, token refresh)
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
