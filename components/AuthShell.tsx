@@ -2,12 +2,18 @@
 
 import { AuthProvider, useAuth } from "@/lib/auth-context"
 import { Sidebar } from "@/components/Sidebar"
-import LoginPage from "@/app/login/page"
 import { Loader2 } from "lucide-react"
+import { LoginForm } from "@/components/LoginForm"
 
 function AuthenticatedLayout({ children }: { children: React.ReactNode }) {
   const { user, usuarioId, loading } = useAuth()
 
+  // Show login if not authenticated (loading starts as false, so this shows immediately)
+  if (!user || !usuarioId) {
+    return <LoginForm />
+  }
+
+  // Show spinner only during login process
   if (loading) {
     return (
       <div className="flex h-screen items-center justify-center bg-background">
@@ -17,10 +23,6 @@ function AuthenticatedLayout({ children }: { children: React.ReactNode }) {
         </div>
       </div>
     )
-  }
-
-  if (!user || !usuarioId) {
-    return <LoginPage />
   }
 
   return (

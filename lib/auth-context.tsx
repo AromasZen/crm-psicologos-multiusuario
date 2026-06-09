@@ -1,129 +1,96 @@
 "use client"
 
-import { createContext, useContext, useEffect, useState, useCallback, type ReactNode } from "react"
+import { createContext, useContext, useState, useCallback, type ReactNode } from "react"
 import { createClient } from "@/lib/supabase"
-import type { User, Session } from "@supabase/supabase-js"
+import type { User } from "@supabase/supabase-js"
 
 interface AuthContextType {
   user: User | null
   usuarioId: string | null
   usuarioNombre: string | null
   loading: boolean
-  signOut: () => Promise<void>
+  login: (email: string, password: string) => Promise<string | null>
+  signOut: () => void
 }
 
 const AuthContext = createContext<AuthContextType>({
   user: null,
   usuarioId: null,
   usuarioNombre: null,
-  loading: true,
-  signOut: async () => {},
+  loading: false,
+  login: async () => null,
+  signOut: () => {},
 })
 
 export function useAuth() {
-  const context = useContext(AuthContext)
-  if (!context) {
-    throw new Error("useAuth must be used within an AuthProvider")
-  }
-  return context
+  return useContext(AuthContext)
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [usuarioId, setUsuarioId] = useState<string | null>(null)
   const [usuarioNombre, setUsuarioNombre] = useState<string | null>(null)
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(false)
 
-  const fetchUsuario = useCallback(async (email: string) => {
+  const login = useCallback(async (email: string, password: string): Promise<string | null> => {
+    setLoading(true)
     try {
       const supabase = createClient()
-      const { data, error } = await supabase
+
+      // 1. Sign in with Supabase Auth
+      const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      })
+
+      if (authError) {
+        setLoading(false)
+        return authError.message === "Invalid login credentials"
+          ? "Email o contraseña incorrectos."
+          : authError.message
+      }
+
+      if (!authData.user) {
+        setLoading(false)
+        return "No se pudo iniciar sesión."
+      }
+
+      // 2. Fetch usuario from DB
+      const { data: dbUser } = await supabase
         .from("usuarios")
         .select("id, nombre")
         .eq("email", email)
         .eq("activo", true)
         .single()
 
-      if (!error && data) {
-        return data
+      if (!dbUser) {
+        await supabase.auth.signOut()
+        setLoading(false)
+        return "Tu cuenta no tiene acceso al sistema."
       }
-      return null
+
+      // 3. Set state — this is what unlocks the app
+      setUser(authData.user)
+      setUsuarioId(dbUser.id)
+      setUsuarioNombre(dbUser.nombre)
+      setLoading(false)
+      return null // null = no error
     } catch {
-      return null
+      setLoading(false)
+      return "Error de conexión. Intentá de nuevo."
     }
   }, [])
 
-  useEffect(() => {
-    const supabase = createClient()
-    let active = true
-
-    async function handleAuth(session: Session | null) {
-      try {
-        if (session?.user) {
-          if (active) setUser(session.user)
-          const dbUser = await fetchUsuario(session.user.email!)
-          if (active) {
-            if (dbUser) {
-              setUsuarioId(dbUser.id)
-              setUsuarioNombre(dbUser.nombre)
-            } else {
-              setUsuarioId(null)
-              setUsuarioNombre(null)
-            }
-          }
-        } else {
-          if (active) {
-            setUser(null)
-            setUsuarioId(null)
-            setUsuarioNombre(null)
-          }
-        }
-      } catch {
-        // On any error, clear auth state
-        if (active) {
-          setUser(null)
-          setUsuarioId(null)
-          setUsuarioNombre(null)
-        }
-      } finally {
-        if (active) setLoading(false)
-      }
-    }
-
-    // Check initial session — Supabase SSR persists the session automatically
-    // via cookies, so getSession() restores it on page refresh
-    supabase.auth.getSession()
-      .then(({ data: { session } }: { data: { session: Session | null } }) => {
-        handleAuth(session)
-      })
-      .catch(() => {
-        // If getSession fails entirely, stop loading and show login
-        if (active) setLoading(false)
-      })
-
-    // Listen for auth changes (login, logout, token refresh)
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (_event: string, session: Session | null) => {
-        await handleAuth(session)
-      }
-    )
-
-    return () => {
-      active = false
-      subscription.unsubscribe()
-    }
-  }, [fetchUsuario])
-
-  const signOut = useCallback(async () => {
-    const supabase = createClient()
-    await supabase.auth.signOut()
+  const signOut = useCallback(() => {
     setUser(null)
     setUsuarioId(null)
     setUsuarioNombre(null)
+    // Fire and forget
+    createClient().auth.signOut().catch(() => {})
   }, [])
 
   return (
-    <AuthContext.Provider value={{ user, usuarioId, usuarioNombre, loading, signOut }}>
+    <AuthContext.Provider value={{ user, usuarioId, usuarioNombre, loading, login, signOut }}>
       {children}
     </AuthContext.Provider>
   )
