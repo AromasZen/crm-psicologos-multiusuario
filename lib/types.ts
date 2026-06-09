@@ -43,26 +43,6 @@ export interface Recordatorio {
   leads?: Pick<Lead, 'nombre' | 'numero' | 'plataforma'>
 }
 
-export interface Cliente {
-  id: string
-  lead_id: string
-  usuario_id: string
-  nombre: string
-  mensualidad: number
-  activo: boolean
-  fecha_alta: string
-}
-
-export interface Comision {
-  id: string
-  cliente_id: string
-  usuario_id: string
-  monto: number
-  pagada: boolean
-  fecha_generada: string
-  fecha_pagada: string | null
-  clientes?: Pick<Cliente, 'nombre'>
-}
 
 export interface DashboardMetrics {
   total: number
