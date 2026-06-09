@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { LayoutDashboard, Users, Bell, UserCheck, DollarSign, LogOut, BookOpen } from "lucide-react"
+import { LayoutDashboard, Users, Bell, LogOut, BookOpen } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useAuth } from "@/lib/auth-context"
 
@@ -10,8 +10,7 @@ const navItems = [
   { href: "/", icon: LayoutDashboard, label: "Dashboard" },
   { href: "/leads", icon: Users, label: "Leads" },
   { href: "/recordatorios", icon: Bell, label: "Recordatorios" },
-  { href: "/clientes", icon: UserCheck, label: "Clientes" },
-  { href: "/comisiones", icon: DollarSign, label: "Comisiones" },
+
   { href: "/recursos", icon: BookOpen, label: "Centro de Recursos" },
 ]
 
