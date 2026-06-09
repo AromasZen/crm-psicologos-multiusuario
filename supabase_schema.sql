@@ -41,7 +41,8 @@ INSERT INTO public.recursos (tipo, categoria, titulo, contenido, orden) VALUES
 -- 6. Insertar datos iniciales: Módulo de Casos de Uso
 INSERT INTO public.recursos (tipo, categoria, titulo, contenido, orden) VALUES
 ('caso_de_uso', NULL, 'Psicólogos y Psicoterapeutas', 'Es el caso de uso principal. Los pacientes suelen olvidar las sesiones recurrentes o cancelar tarde. Con recordatorios 24 horas antes, disminuyen el ausentismo en un 80% y aseguran el cobro de la sesión.', 1),
-('caso_de_uso', NULL, 'Nutricionistas y Dietistas', 'Ideal para enviar pautas antes de la consulta (como ayunos o estudios previos) junto con el recordatorio del turno. Ayuda a mantener la constancia en los tratamientos de mediano plazo.', 2),
+('caso_de_uso', NULL, 'Nutricionistas y Dietistas',
+ 'Ideal para enviar pautas antes de la consulta (como ayunos o estudios previos) junto con el recordatorio del turno. Ayuda a mantener la constancia en los tratamientos de mediano plazo.', 2),
 ('caso_de_uso', NULL, 'Kinesiólogos y Fisioterapeutas', 'Pacientes con sesiones semanales o derivaciones médicas. El ausentismo interrumpe el tratamiento. Los recordatorios automáticos garantizan que completen sus sesiones programadas.', 3),
 ('caso_de_uso', NULL, 'Médicos (Consultorios Privados)', 'Permite descongestionar la recepción del consultorio. En vez de que la secretaria llame por teléfono uno por uno, el sistema se encarga de confirmar las citas de la agenda.', 4),
 ('caso_de_uso', NULL, 'Abogados y Consultores', 'Ideal para profesionales que cobran por hora de asesoría. Evita la pérdida de horas facturables por clientes que no asisten a las reuniones virtuales o presenciales.', 5),

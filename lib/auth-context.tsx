@@ -53,7 +53,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const supabase = createClient()
     let active = true
 
-    async function handleAuth(session: any) {
+    async function handleAuth(session: Session | null) {
       if (session?.user) {
         if (active) setUser(session.user)
         const dbUser = await fetchUsuario(session.user.email!)
@@ -76,14 +76,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (active) setLoading(false)
     }
 
-    // Check initial session
+    // Check initial session — Supabase SSR persists the session automatically
+    // via cookies, so getSession() restores it on page refresh
     supabase.auth.getSession().then(({ data: { session } }: { data: { session: Session | null } }) => {
       handleAuth(session)
     })
 
-    // Listen for auth changes
+    // Listen for auth changes (login, logout, token refresh)
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event: string, session: Session | null) => {
+      async (_event: string, session: Session | null) => {
         await handleAuth(session)
       }
     )
@@ -93,7 +94,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       subscription.unsubscribe()
     }
   }, [fetchUsuario])
-
 
   const signOut = useCallback(async () => {
     const supabase = createClient()
