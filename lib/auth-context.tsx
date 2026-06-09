@@ -56,12 +56,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
 
       // 2. Fetch usuario from DB
-      const { data: dbUser } = await supabase
+      // Use .maybeSingle() to avoid 406 errors when no row is found
+      const { data: dbUser, error: dbError } = await supabase
         .from("usuarios")
         .select("id, nombre")
-        .eq("email", email)
-        .eq("activo", true)
-        .single()
+        .eq("email", authData.user.email!)
+        .maybeSingle()
+
+      if (dbError) {
+        console.error("Error buscando usuario:", dbError.message)
+      }
 
       if (!dbUser) {
         await supabase.auth.signOut()
